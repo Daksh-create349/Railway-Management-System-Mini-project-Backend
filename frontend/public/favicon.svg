@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <!-- Gradient Background with Rounded Corners -->
+  <defs>
+    <linearGradient id="trainGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e40af" />
+      <stop offset="100%" stop-color="#3b82f6" />
+    </linearGradient>
+    <linearGradient id="windowGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95" />
+      <stop offset="100%" stop-color="#dbeafe" stop-opacity="0.85" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#0f172a" flood-opacity="0.15" />
+    </filter>
+  </defs>
+
+  <!-- Card Background -->
+  <rect width="64" height="64" rx="16" fill="url(#trainGrad)" />
+
+  <!-- Modern Bullet Train Front Silhouette -->
+  <g filter="url(#shadow)">
+    <!-- Train Body -->
+    <path d="M18 17C18 13.6863 20.6863 11 24 11H40C43.3137 11 46 13.6863 46 17V40C46 43.3137 43.3137 46 40 46H24C20.6863 46 18 43.3137 18 40V17Z" fill="#ffffff" />
+    
+    <!-- Windshield / Front Glass -->
+    <path d="M22 17C22 15.3431 23.3431 14 25 14H39C40.6569 14 42 15.3431 42 17V26H22V17Z" fill="#1e293b" />
+    
+    <!-- Front Grill / Nose Detail -->
+    <path d="M26 31H38" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" />
+    <path d="M28 35H36" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" />
+
+    <!-- Headlights -->
+    <circle cx="23.5" cy="40.5" r="2.5" fill="#3b82f6" />
+    <circle cx="40.5" cy="40.5" r="2.5" fill="#3b82f6" />
+    
+    <!-- Wheels / Bogie base -->
+    <rect x="21" y="46" width="4" height="3" rx="1" fill="#cbd5e1" />
+    <rect x="39" y="46" width="4" height="3" rx="1" fill="#cbd5e1" />
+
+    <!-- Under-track ground rail -->
+    <path d="M14 53L50 53" stroke="#93c5fd" stroke-width="3" stroke-linecap="round" />
+    <path d="M20 57L16 53" stroke="#93c5fd" stroke-width="2" stroke-linecap="round" />
+    <path d="M44 57L48 53" stroke="#93c5fd" stroke-width="2" stroke-linecap="round" />
+    <path d="M30 57L34 53" stroke="#93c5fd" stroke-width="2" stroke-linecap="round" />
+  </g>
+</svg>
