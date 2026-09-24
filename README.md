@@ -27,7 +27,7 @@ Railway operations typically require operators, station staff, and passengers to
 - **Live Telemetry & Delay Simulation Engine**:
   - Randomized event progression simulator updating train status and broadcasting real-time operational alerts to all active passenger accounts.
 - **Top Elevated Navigation Bar**:
-  - Modern, backdrop-blurred top navigation bar with dynamic role-gated tabs, unread notification counter, and 1-click demo role switcher.
+  - Modern, backdrop-blurred top navigation bar with dynamic role-gated tabs, unread notification counter, and secure credential sign-in.
 
 ---
 
@@ -59,7 +59,20 @@ Railway operations typically require operators, station staff, and passengers to
 Backend_Railway_system/
 ├── .gitignore                                      # Root gitignore for full monorepo
 ├── README.md                                       # Comprehensive project documentation
-├── Backend_Railway_System.postman_collection.json  # Complete exportable Postman suite
+├── CONTRIBUTING.md                                 # Contribution guidelines & code standards
+├── LICENSE                                         # MIT License
+├── screenshots/                                    # High-resolution screenshots of all features
+│   ├── 01_admin_analytics_dashboard.png
+│   ├── 02_train_search_and_fleet.png
+│   ├── 03_instant_booking_modal.png
+│   ├── 04_pnr_status_boarding_pass.png
+│   ├── 05_passenger_my_journeys.png
+│   ├── 06_live_train_status_telemetry.png
+│   ├── 07_staff_operations_control.png
+│   ├── 08_passenger_boarding_manifest.png
+│   ├── 09_station_hubs_directory.png
+│   ├── 10_live_telemetry_notifications.png
+│   └── 11_auth_and_role_switcher.png
 │
 ├── backend/                                        # Express REST API Server
 │   ├── .env                                        # Environment configuration (Port, Mongo, JWT)
@@ -288,46 +301,124 @@ All endpoints are prefixed with `/api`. Protected routes require standard `Autho
 
 ---
 
-## Application Preview & Interface Mockups
+## Application Preview & Feature Gallery
 
-```text
-+---------------------------------------------------------------------------------------------------------------+
-|  SmartRail   [ Search & Book ]   [ Live Status ]   [ PNR Tracker ]   [ Admin Analytics ]   (Simulate)  [Alerts: 3] [Admin] |
-+---------------------------------------------------------------------------------------------------------------+
-|                                                                                                               |
-|   RAILWAY OPERATIONS DASHBOARD                                                                                 |
-|   ============================                                                                                |
-|   +-------------------+  +-------------------+  +-------------------+  +-------------------+                  |
-|   | Total Bookings    |  | Total Revenue     |  | Active Fleet      |  | Cancelled Tickets |                  |
-|   | 658  [+28%]       |  | ₹1,42,000 [+19%]  |  | 24 Routes         |  | 35  [-15%]        |                  |
-|   | ||||||| 7 Days    |  | ||||||| 7 Days    |  | ||||||| 7 Days    |  | ||||||| 7 Days    |                  |
-|   +-------------------+  +-------------------+  +-------------------+  +-------------------+                  |
-|                                                                                                               |
-|   +---------------------------------------------+   +------------------------------------+                    |
-|   | Booking Velocity (Jan - Dec)                |   | Booking Fulfillment Statistics     |                    |
-|   |    |    |    |    |    |    |    |    |   |   |        (  85% Success Ratio  )     |                    |
-|   |   Jan  Feb  Mar  Apr  May  Jun  Jul  Aug ...|   |   Confirmed: 520   Cancelled: 48   |                    |
-|   +---------------------------------------------+   +------------------------------------+                    |
-|                                                                                                               |
-|   RECENT RESERVATIONS AUDIT                                                                                   |
-|   Passenger / PNR         Date & Time         Route            Seat       Status       Fare                   |
-|   [RS] PNR10001           23 Sep, 10:45 AM    NDLS -> BCT      S1-21      Confirmed    ₹1,500                 |
-|   [DS] PNR1790141226175   23 Sep, 11:20 AM    MMCT -> NDLS     B1-24      Cancelled    ₹1,500                 |
-+---------------------------------------------------------------------------------------------------------------+
-```
+Explore the comprehensive interface features of SmartRail across passenger, station staff, and operational administration portals.
 
-```text
-+---------------------------------------------------------------------------------------------------------------+
-|  SmartRail BOARDING PASS                                                                                      |
-|  =======================                                                                                      |
-|   ORIGIN: NDLS (New Delhi)   ----------------------------->   DESTINATION: BCT (Mumbai Central)               |
-|   Train: Mumbai Rajdhani Express (#12951)                     Status: [ Confirmed ]                           |
-|                                                                                                               |
-|   Passenger: Rahul Sharma (24, Male)                          Allocated Berth: S1-21                          |
-|   Travel Date: 10 Oct 2026                                    PNR: PNR10001  [Copy]                           |
-|   Fare Paid: ₹1,500                                           [ Cancel Ticket & Claim 80% Refund ]            |
-+---------------------------------------------------------------------------------------------------------------+
-```
+### 1. Executive Operations & Analytics Console
+Comprehensive command center for railway executives featuring Preclinic-inspired KPI telemetry cards, revenue velocity sparklines, fulfillment ratios, and real-time reservation audit logging.
+
+![Executive Analytics Dashboard](screenshots/01_admin_analytics_dashboard.png)
+
+- **Revenue Velocity Tracking**: Visual monthly progression comparing confirmed versus completed bookings.
+- **Dynamic KPI StatCards**: Real-time aggregation of active fleet, total revenue, booking counts, and cancellations with 7-day velocity indicators.
+- **Reservation Audit Stream**: Live table of all tickets issued across the network with passenger identities, route codes, assigned berths, and ticket status.
+
+---
+
+### 2. Passenger Train Discovery & Available Fleet
+Intuitive journey planning portal enabling travelers and operators to search schedules, inspect route endpoints, and monitor seat availability in real time.
+
+![Train Search and Fleet Inventory](screenshots/02_train_search_and_fleet.png)
+
+- **Instant Route Filtering**: Filter by origin station, destination terminal, or train name/number.
+- **Seat Quota Progress Indicators**: Dynamic color-coded capacity tracks (`Available Quota`) indicating real-time berth availability.
+- **Status Badges**: Live indicators (`Running`, `Delayed`, `Departed`) kept in sync with the operational database.
+
+---
+
+### 3. Express Seat Reservation & Berth Allocation
+Frictionless ticket reservation modal featuring passenger demographics collection and deterministic IRCTC-style berth allocation.
+
+![Express Seat Reservation Modal](screenshots/03_instant_booking_modal.png)
+
+- **Berth Preference Engine**: Select preferred berth type (`Lower Berth`, `Middle Berth`, `Upper Berth`, `Side Lower`, `Side Upper`).
+- **Dynamic Allocation Preview**: Instantly calculates coach and seat number (e.g. `B1-17 (LB - Lower Berth)`) before submission.
+- **Instant Booking Confirmation**: Generates a unique cryptographic PNR with automatic seat count decrement in MongoDB.
+
+---
+
+### 4. PNR Tracker & Digital Boarding Pass
+Airline-style digital boarding pass generated via complex MongoDB multi-collection aggregation pipelines (`$match` + `$lookup`).
+
+![PNR Status and Digital Boarding Pass](screenshots/04_pnr_status_boarding_pass.png)
+
+- **Unified Data Aggregation**: Joins passenger demographics, train schedule metadata, and booking records in a single high-performance query.
+- **Boarding Pass Metadata**: Displays journey date, boarding station, arrival terminal, allocated berth (`S1-21`), and fare breakdown.
+- **1-Click Cancellation & Refund**: Embedded cancellation trigger with immediate 80% refund calculation and seat inventory restoration.
+
+---
+
+### 5. Passenger Travel Portal — My Journeys
+Personalized traveler dashboard consolidating active itineraries and historical railway bookings.
+
+![Passenger My Journeys Dashboard](screenshots/05_passenger_my_journeys.png)
+
+- **Itinerary Management**: Active reservations, completed trips, and cancelled bookings organized with clean status badges.
+- **Quick PNR Copying**: One-click clipboard copy for quick sharing or verification.
+- **Self-Service Refunds**: Cancel active bookings directly from the itinerary list with instantaneous refund ledgering.
+
+---
+
+### 6. Live Track Telemetry & Delay Simulation Board
+Event-driven operations center for monitoring train movements across track segments and simulating real-time operational delays.
+
+![Live Train Status and Telemetry](screenshots/06_live_train_status_telemetry.png)
+
+- **Real-Time Signal Status**: Displays running state (`Running`, `Delayed`, `Departed`, `Arrived`).
+- **One-Click Event Simulator**: Randomizes realistic operational events and broadcasts telemetry alerts across passenger devices.
+- **Manual Dispatch Overrides**: Station masters can override train status directly from dropdown selectors.
+
+---
+
+### 7. Station Staff & TTE Dispatch Desk
+Specialized station master and Traveling Ticket Examiner (TTE) workspace tailored for dispatch operations and passenger manifest verification.
+
+![Staff Operations Control Room](screenshots/07_staff_operations_control.png)
+
+- **Rapid Dispatch Triggers**: 1-click status changers (`On Time`, `+15m Delay`, `+45m Delay`, `Departed`, `Arrived`).
+- **Operational Sync**: Instant propagation of station updates to passenger portals and departure displays.
+
+---
+
+### 8. Verified Passenger Boarding Manifest
+Searchable, filterable passenger boarding manifest for conductors and station staff.
+
+![Verified Passenger Boarding Manifest](screenshots/08_passenger_boarding_manifest.png)
+
+- **Train-Specific Filtering**: Filter passengers by train schedule or view combined network boarding charts.
+- **Demographic & Berth Verification**: Inspect passenger age, gender, contact number, allocated berth, and ticket validity (`Confirmed` / `Cancelled`).
+
+---
+
+### 9. Railway Station Directory & Junction Hubs
+Centralized junction hub registry displaying operational codes, regional jurisdictions, and active terminal statuses.
+
+![Railway Station Directory](screenshots/09_station_hubs_directory.png)
+
+- **Station Registry**: Complete catalog of primary junctions (`NDLS`, `BCT`, `LKO`, `BSB`, `HWH`, etc.).
+- **Hub Management**: Author and configure new terminal hubs and geographic connections.
+
+---
+
+### 10. Live Telemetry Alerts & Notification Drawer
+Slide-over telemetry broadcast drawer delivering instant, real-time alerts to passengers and operators.
+
+![Live Telemetry Notifications Drawer](screenshots/10_live_telemetry_notifications.png)
+
+- **Multi-Category Alerts**: Operational delay updates, platform gate assignments, cancellation audit confirmations, and dispatch logs.
+- **Time-Stamped Feed**: Real-time timestamped log synchronized via periodic telemetry polling.
+
+---
+
+### 11. Role-Based Access Control & User Authentication
+Clean, secure credential-based authentication portal providing tailored access for passengers, station staff, and system administrators.
+
+![User Authentication and Sign In Modal](screenshots/11_auth_and_role_switcher.png)
+
+- **Credential-Based Sign In**: Clean and intuitive email address and password input fields.
+- **Account Registration & RBAC**: Self-service passenger registration and role assignment.
+- **Secure Authentication**: Full JWT-based authorization and session storage with bcrypt-hashed credentials.
 
 ---
 
@@ -358,6 +449,18 @@ All endpoints are prefixed with `/api`. Protected routes require standard `Autho
    - The cancellation refund formula is strictly set at 80% of the total ticket fare, with a 20% flat operational deduction.
 4. **Payment Gateway**:
    - Fares and refunds are processed through direct database transaction state management; live third-party payment gateways (e.g. Razorpay/Stripe) are not attached to this local build.
+
+---
+
+## Contributing
+
+Contributions to SmartRail are welcome! Please check out [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines on setting up your local environment, coding standards, branching strategies, and submitting pull requests.
+
+---
+
+## License
+
+This project is open-source software licensed under the **MIT License**. See the [LICENSE](LICENSE) file for complete details.
 
 ---
 
