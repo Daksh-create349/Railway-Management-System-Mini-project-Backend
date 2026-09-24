@@ -16,22 +16,26 @@ import { api } from '../services/api';
 
 export default function StaffDashboard({ onSimulationTriggered }) {
   const [trains, setTrains] = useState([]);
-  const [passengers, setPassengers] = useState([]);
+  const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('trains'); // 'trains' or 'manifest'
-  const [passengerSearch, setPassengerSearch] = useState('');
+  const [selectedTrainId, setSelectedTrainId] = useState('ALL');
+  const [searchQuery, setSearchQuery] = useState('');
   const [simulatingId, setSimulatingId] = useState(null);
   const [updatingId, setUpdatingId] = useState(null);
 
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [trainsData, passData] = await Promise.all([
+      const [trainsData, bookingsData] = await Promise.all([
         api.getTrains().catch(() => []),
-        api.getPassengers({ search: passengerSearch }).catch(() => [])
+        api.getAllBookings(1, { 
+          trainId: selectedTrainId !== 'ALL' ? selectedTrainId : undefined,
+          limit: 100 
+        }).catch(() => [])
       ]);
       setTrains(Array.isArray(trainsData) ? trainsData : []);
-      setPassengers(Array.isArray(passData) ? passData : []);
+      setBookings(Array.isArray(bookingsData) ? bookingsData : []);
     } catch (err) {
       console.error('Error fetching staff data:', err);
     } finally {
@@ -41,7 +45,7 @@ export default function StaffDashboard({ onSimulationTriggered }) {
 
   useEffect(() => {
     fetchData();
-  }, [passengerSearch]);
+  }, [selectedTrainId]);
 
   const handleUpdateStatus = async (trainId, newStatus) => {
     setUpdatingId(trainId);
@@ -103,7 +107,7 @@ export default function StaffDashboard({ onSimulationTriggered }) {
           onClick={() => setActiveTab('manifest')}
         >
           <Users size={16} />
-          <span>Passenger Boarding Manifest ({passengers.length})</span>
+          <span>Passenger Boarding Manifest ({bookings.length})</span>
         </button>
       </div>
 
@@ -192,63 +196,149 @@ export default function StaffDashboard({ onSimulationTriggered }) {
         </div>
       )}
 
-      {/* View 2: Passenger Manifest */}
+      {/* View 2: Passenger Manifest (Train-Specific Reservation Chart) */}
       {activeTab === 'manifest' && (
         <div className="staff-manifest-section">
-          <div className="table-search-bar mb-4">
-            <Search size={16} />
-            <input
-              type="text"
-              placeholder="Search passenger by name, email, or phone number..."
-              value={passengerSearch}
-              onChange={(e) => setPassengerSearch(e.target.value)}
-            />
+          {/* Controls: Train Chart Selector + Passenger Search */}
+          <div className="manifest-controls-box mb-4">
+            <div className="manifest-select-wrap">
+              <label className="manifest-control-label">
+                <Train size={14} /> Train Reservation Chart:
+              </label>
+              <select
+                className="manifest-dropdown"
+                value={selectedTrainId}
+                onChange={(e) => setSelectedTrainId(e.target.value)}
+              >
+                <option value="ALL">All Trains (Combined Network Manifest)</option>
+                {trains.map((t) => (
+                  <option key={t._id} value={t._id}>
+                    #{t.trainNumber} - {t.trainName} ({t.source} ➜ {t.destination})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="manifest-search-wrap">
+              <label className="manifest-control-label">
+                <Search size={14} /> Filter Passenger / PNR:
+              </label>
+              <div className="table-search-bar">
+                <Search size={15} />
+                <input
+                  type="text"
+                  placeholder="Filter by passenger name, phone, or PNR..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+            </div>
           </div>
 
           <div className="table-card">
+            <div className="card-header-between" style={{ padding: '16px 20px', borderBottom: '1px solid var(--border-light)' }}>
+              <div>
+                <h3 className="card-title" style={{ fontSize: '16px' }}>
+                  {selectedTrainId === 'ALL'
+                    ? 'Combined Network Boarding Manifest'
+                    : `Official Reservation Chart: ${trains.find(t => t._id === selectedTrainId)?.trainName || 'Train'} (#${trains.find(t => t._id === selectedTrainId)?.trainNumber || ''})`}
+                </h3>
+                <p className="card-subtitle">
+                  {selectedTrainId === 'ALL'
+                    ? 'Aggregated list of all ticket holders across the railway network'
+                    : `Passengers verified for boarding on ${trains.find(t => t._id === selectedTrainId)?.source} ➜ ${trains.find(t => t._id === selectedTrainId)?.destination}`}
+                </p>
+              </div>
+              <span className="table-count-badge">
+                {bookings.filter((b) => {
+                  if (!searchQuery) return true;
+                  const q = searchQuery.toLowerCase();
+                  const passName = b.passengerId?.name?.toLowerCase() || '';
+                  const phone = b.passengerId?.phone?.toLowerCase() || '';
+                  const pnr = b.pnr?.toLowerCase() || '';
+                  return passName.includes(q) || phone.includes(q) || pnr.includes(q);
+                }).length} Passengers
+              </span>
+            </div>
+
             <div className="table-responsive">
               <table className="preclinic-table">
                 <thead>
                   <tr>
-                    <th>Passenger Name</th>
-                    <th>Email</th>
-                    <th>Phone</th>
-                    <th>Age & Gender</th>
-                    <th>Verification</th>
+                    <th>Passenger Details</th>
+                    <th>Booking PNR</th>
+                    <th>Train & Route</th>
+                    <th>Allocated Berth</th>
+                    <th>Booking Status</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {passengers.length === 0 ? (
+                  {bookings.filter((b) => {
+                    if (!searchQuery) return true;
+                    const q = searchQuery.toLowerCase();
+                    const passName = b.passengerId?.name?.toLowerCase() || '';
+                    const phone = b.passengerId?.phone?.toLowerCase() || '';
+                    const pnr = b.pnr?.toLowerCase() || '';
+                    return passName.includes(q) || phone.includes(q) || pnr.includes(q);
+                  }).length === 0 ? (
                     <tr>
                       <td colSpan="5" className="text-center py-6 text-muted">
-                        No registered passengers matching search.
+                        No passengers found on this train chart. Reserve a seat to populate this train's manifest.
                       </td>
                     </tr>
                   ) : (
-                    passengers.map((p) => (
-                      <tr key={p._id}>
-                        <td>
-                          <div className="table-user-cell">
-                            <div className="table-user-avatar">
-                              {p.name ? p.name.charAt(0) : 'P'}
-                            </div>
-                            <strong className="user-primary-name">{p.name || 'Passenger'}</strong>
-                          </div>
-                        </td>
-                        <td>{p.email || 'N/A'}</td>
-                        <td>
-                          <span className="font-mono">{p.phone || '9876543210'}</span>
-                        </td>
-                        <td>
-                          <span>{p.age || '25'} yrs, {p.gender || 'Male'}</span>
-                        </td>
-                        <td>
-                          <span className="status-pill status-confirmed">
-                            <Check size={11} /> Verified
-                          </span>
-                        </td>
-                      </tr>
-                    ))
+                    bookings
+                      .filter((b) => {
+                        if (!searchQuery) return true;
+                        const q = searchQuery.toLowerCase();
+                        const passName = b.passengerId?.name?.toLowerCase() || '';
+                        const phone = b.passengerId?.phone?.toLowerCase() || '';
+                        const pnr = b.pnr?.toLowerCase() || '';
+                        return passName.includes(q) || phone.includes(q) || pnr.includes(q);
+                      })
+                      .map((b) => {
+                        const pass = b.passengerId || {};
+                        const tr = b.trainId || {};
+                        const isCancelled = b.status === 'Cancelled';
+
+                        return (
+                          <tr key={b._id}>
+                            <td>
+                              <div className="table-user-cell">
+                                <div className="table-user-avatar">
+                                  {pass.name ? pass.name.charAt(0) : 'P'}
+                                </div>
+                                <div>
+                                  <strong className="user-primary-name">{pass.name || 'Primary Passenger'}</strong>
+                                  <span className="user-sub-info">
+                                    {pass.age || '25'} yrs, {pass.gender || 'Male'} • <span className="font-mono">{pass.phone || 'N/A'}</span>
+                                  </span>
+                                </div>
+                              </div>
+                            </td>
+                            <td>
+                              <span className="pnr-code-badge font-mono font-bold">{b.pnr}</span>
+                            </td>
+                            <td>
+                              <div>
+                                <strong style={{ fontSize: '13px', display: 'block' }}>{tr.trainName || 'Express'} (#{tr.trainNumber || 'Fleet'})</strong>
+                                <span className="route-cell-tag" style={{ fontSize: '11px', marginTop: '2px', display: 'inline-block' }}>
+                                  {b.source || tr.source} ➜ {b.destination || tr.destination}
+                                </span>
+                              </div>
+                            </td>
+                            <td>
+                              <span className="seat-cell-badge font-bold">{b.seatNumber || 'B1-01 (LB)'}</span>
+                            </td>
+                            <td>
+                              <span className={`status-pill status-${(b.status || 'Confirmed').toLowerCase()}`}>
+                                <span className="status-dot" />
+                                {b.status || 'Confirmed'}
+                              </span>
+                            </td>
+                          </tr>
+                        );
+                      })
                   )}
                 </tbody>
               </table>

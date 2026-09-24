@@ -143,10 +143,18 @@ const getAllBookings=async(req,res,next)=>{
 try{
 
 const page=parseInt(req.query.page)||1;
+const limit=parseInt(req.query.limit)||50;
+const query={};
 
-const bookings=await Booking.find()
-.skip((page-1)*5)
-.limit(5)
+if(req.query.trainId){
+  query.trainId=req.query.trainId;
+}
+
+const bookings=await Booking.find(query)
+.populate("passengerId")
+.populate("trainId")
+.skip((page-1)*limit)
+.limit(limit)
 .sort({
 createdAt:-1
 });

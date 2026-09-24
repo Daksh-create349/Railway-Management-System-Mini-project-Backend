@@ -539,6 +539,55 @@
   box-shadow: 0 4px 10px rgba(15, 118, 110, 0.2);
 }
 
+.manifest-controls-box {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 16px;
+  background: #ffffff;
+  padding: 16px 20px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-sm);
+  align-items: flex-end;
+}
+
+@media (max-width: 900px) {
+  .manifest-controls-box {
+    grid-template-columns: 1fr;
+  }
+}
+
+.manifest-control-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.manifest-dropdown {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-light);
+  font-size: 13.5px;
+  background: #ffffff;
+  color: var(--text-main);
+  font-weight: 600;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.manifest-dropdown:focus {
+  border-color: #0f766e;
+  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.15);
+}
+
 .staff-trains-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));

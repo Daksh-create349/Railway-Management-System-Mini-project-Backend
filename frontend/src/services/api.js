@@ -82,7 +82,13 @@ export const api = {
 
   // Bookings
   createBooking: (body) => request('/bookings', { method: 'POST', body: JSON.stringify(body) }),
-  getAllBookings: (page = 1) => request(`/bookings?page=${page}`),
+  getAllBookings: (page = 1, params = {}) => {
+    const query = new URLSearchParams();
+    if (page) query.append('page', page);
+    if (params.trainId) query.append('trainId', params.trainId);
+    if (params.limit) query.append('limit', params.limit);
+    return request(`/bookings?${query.toString()}`);
+  },
   getBookingByPNR: (pnr) => request(`/bookings/pnr/${pnr}`),
   getJourneyHistory: (passengerId) => request(`/bookings/history/${passengerId}`),
   cancelBooking: (id, reason) =>

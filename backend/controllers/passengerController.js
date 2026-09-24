@@ -14,18 +14,21 @@ const createPassenger = async (req, res, next) => {
 const getPassengers = async (req, res, next) => {
   try {
     const page = parseInt(req.query.page) || 1;
-    const limit = 5;
+    const limit = parseInt(req.query.limit) || 50;
     const search = req.query.search || "";
 
-    const query = {
-      $or: [
-        { name: { $regex: search, $options: "i" } },
-        { email: { $regex: search, $options: "i" } },
-        { phone: { $regex: search, $options: "i" } }
-      ]
-    };
+    const query = search
+      ? {
+          $or: [
+            { name: { $regex: search, $options: "i" } },
+            { email: { $regex: search, $options: "i" } },
+            { phone: { $regex: search, $options: "i" } }
+          ]
+        }
+      : {};
 
     const passengers = await Passenger.find(query)
+      .sort({ _id: -1 })
       .skip((page - 1) * limit)
       .limit(limit);
 
