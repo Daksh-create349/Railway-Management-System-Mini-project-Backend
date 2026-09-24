@@ -34,7 +34,7 @@ export default function AdminDashboard({ onRefreshTrigger }) {
     destination: 'BCT',
     totalSeats: 60,
     availableSeats: 60,
-    status: 'Running'
+    status: 'Scheduled'
   });
 
   const fetchData = async () => {
@@ -72,7 +72,7 @@ export default function AdminDashboard({ onRefreshTrigger }) {
         destination: 'BCT',
         totalSeats: 60,
         availableSeats: 60,
-        status: 'Running'
+        status: 'Scheduled'
       });
       fetchData();
       if (onRefreshTrigger) onRefreshTrigger();
@@ -389,6 +389,18 @@ export default function AdminDashboard({ onRefreshTrigger }) {
                       setNewTrain({ ...newTrain, totalSeats: val, availableSeats: val });
                     }}
                   />
+                </div>
+                <div className="form-group">
+                  <label>Operational Status</label>
+                  <select
+                    value={newTrain.status}
+                    onChange={(e) => setNewTrain({ ...newTrain, status: e.target.value })}
+                  >
+                    <option value="Scheduled">Scheduled</option>
+                    <option value="On Time">On Time</option>
+                    <option value="Running">Running</option>
+                    <option value="Delayed by 15 mins">Delayed by 15 mins</option>
+                  </select>
                 </div>
               </div>
               <div className="modal-actions">

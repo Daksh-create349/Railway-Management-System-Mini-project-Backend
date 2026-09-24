@@ -16,7 +16,7 @@ const trainSchema=new mongoose.Schema({
     availableSeats:Number,
     status:{
         type:String,
-        default:"Running"
+        default:"Scheduled"
     }
 });
 

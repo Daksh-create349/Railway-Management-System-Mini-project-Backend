@@ -2,6 +2,68 @@ import React, { useState } from 'react';
 import { X, CheckCircle, Ticket, ArrowRight, User, Phone, Mail, Calendar, ShieldCheck } from 'lucide-react';
 import { api } from '../services/api';
 
+function getBerthDetails(seatNumberInCoach) {
+  const mod = seatNumberInCoach % 8;
+  switch (mod) {
+    case 1:
+    case 4:
+      return { code: 'LB', name: 'Lower Berth' };
+    case 2:
+    case 5:
+      return { code: 'MB', name: 'Middle Berth' };
+    case 3:
+    case 6:
+      return { code: 'UB', name: 'Upper Berth' };
+    case 7:
+      return { code: 'SL', name: 'Side Lower' };
+    case 0:
+      return { code: 'SU', name: 'Side Upper' };
+    default:
+      return { code: 'UB', name: 'Upper Berth' };
+  }
+}
+
+function allocateSmartBerth(train, preference = 'NONE') {
+  const total = train?.totalSeats || 60;
+  const avail = train?.availableSeats ?? 60;
+  const bookedCount = Math.max(0, total - avail);
+
+  // Deterministic seat index in the fleet
+  const seatIndex = bookedCount + 1;
+  const coachNum = Math.floor((seatIndex - 1) / 72) + 1;
+  const coach = `B${coachNum}`;
+  let seatInCoach = ((seatIndex - 1) % 72) + 1;
+
+  // Honor passenger preference in the current 8-berth bay if specified
+  if (preference && preference !== 'NONE') {
+    const bayStart = Math.floor((seatInCoach - 1) / 8) * 8;
+    const prefMap = {
+      'LB': 1,
+      'MB': 2,
+      'UB': 3,
+      'SL': 7,
+      'SU': 8
+    };
+    if (prefMap[preference]) {
+      const candidate = bayStart + prefMap[preference];
+      if (candidate <= 72 && candidate <= total) {
+        seatInCoach = candidate;
+      }
+    }
+  }
+
+  const berth = getBerthDetails(seatInCoach);
+  const formattedSeat = `${coach}-${seatInCoach.toString().padStart(2, '0')}`;
+  return {
+    coach,
+    seatInCoach,
+    formattedSeat,
+    berthCode: berth.code,
+    berthName: berth.name,
+    fullLabel: `${formattedSeat} (${berth.code} - ${berth.name})`
+  };
+}
+
 export default function BookingModal({ train, onClose, onBookingSuccess, currentUser }) {
   const [formData, setFormData] = useState({
     name: currentUser?.name || '',
@@ -9,12 +71,14 @@ export default function BookingModal({ train, onClose, onBookingSuccess, current
     phone: '9876543210',
     age: '26',
     gender: 'Male',
-    seatNumber: `S${Math.floor(Math.random() * 4) + 1}-${Math.floor(Math.random() * 48) + 1}`,
+    berthPreference: 'NONE',
   });
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [confirmedBooking, setConfirmedBooking] = useState(null);
+
+  const previewAllocation = allocateSmartBerth(train, formData.berthPreference);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,6 +86,9 @@ export default function BookingModal({ train, onClose, onBookingSuccess, current
     setLoading(true);
 
     try {
+      // Allocate smart berth deterministically
+      const allocated = allocateSmartBerth(train, formData.berthPreference);
+
       // 1. Create passenger profile
       const passenger = await api.createPassenger({
         name: formData.name,
@@ -38,7 +105,7 @@ export default function BookingModal({ train, onClose, onBookingSuccess, current
         source: train.source,
         destination: train.destination,
         journeyDate: new Date(),
-        seatNumber: formData.seatNumber,
+        seatNumber: allocated.fullLabel,
         fare: 1500,
       });
 
@@ -47,6 +114,7 @@ export default function BookingModal({ train, onClose, onBookingSuccess, current
         passengerName: formData.name,
         trainName: train.trainName,
         trainNumber: train.trainNumber,
+        allocatedBerth: allocated,
       });
 
       if (onBookingSuccess) onBookingSuccess();
@@ -194,6 +262,26 @@ export default function BookingModal({ train, onClose, onBookingSuccess, current
                     <option value="Other">Other</option>
                   </select>
                 </div>
+              </div>
+
+              <div className="form-group">
+                <label>Berth Preference (IRCTC Layout)</label>
+                <select
+                  value={formData.berthPreference}
+                  onChange={(e) => setFormData({ ...formData, berthPreference: e.target.value })}
+                >
+                  <option value="NONE">No Preference (Auto-Allocate)</option>
+                  <option value="LB">Lower Berth (LB) - Preferred for Seniors</option>
+                  <option value="MB">Middle Berth (MB)</option>
+                  <option value="UB">Upper Berth (UB)</option>
+                  <option value="SL">Side Lower (SL)</option>
+                  <option value="SU">Side Upper (SU)</option>
+                </select>
+              </div>
+
+              <div className="berth-preview-banner">
+                <span className="berth-preview-label">Deterministic Berth Allocation:</span>
+                <strong className="berth-preview-val">{previewAllocation.fullLabel}</strong>
               </div>
             </div>
 
