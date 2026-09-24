@@ -367,6 +367,7 @@ All endpoints are prefixed with `/api`. Protected routes require standard `Autho
 - **Yuvraj Mishra**
 - **Prathamesh More**
 - **Sumit Shingole**
+- **Rudra Yadav**
 
 ---
 
