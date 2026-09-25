@@ -19,12 +19,12 @@ const getPassengers = async (req, res, next) => {
 
     const query = search
       ? {
-          $or: [
-            { name: { $regex: search, $options: "i" } },
-            { email: { $regex: search, $options: "i" } },
-            { phone: { $regex: search, $options: "i" } }
-          ]
-        }
+        $or: [
+          { name: { $regex: search, $options: "i" } },
+          { email: { $regex: search, $options: "i" } },
+          { phone: { $regex: search, $options: "i" } }
+        ]
+      }
       : {};
 
     const passengers = await Passenger.find(query)

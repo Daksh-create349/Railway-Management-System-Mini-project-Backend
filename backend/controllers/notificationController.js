@@ -1,50 +1,50 @@
-const Notification=require("../models/Notification");
+const Notification = require("../models/Notification");
 
 
-const getNotifications=async(req,res,next)=>{
+const getNotifications = async (req, res, next) => {
 
-try{
+    try {
 
-const notifications=await Notification.find({
-userId:req.user.id
-})
-.sort({
-createdAt:-1
-});
-
-
-res.json(notifications);
+        const notifications = await Notification.find({
+            userId: req.user.id
+        })
+            .sort({
+                createdAt: -1
+            });
 
 
-}
-catch(error){
-next(error);
-}
-
-};
+        res.json(notifications);
 
 
-
-const createNotification=async(req,res,next)=>{
-
-try{
-
-
-const notification=await Notification.create(req.body);
-
-
-res.status(201).json(notification);
-
-
-}
-catch(error){
-next(error);
-}
+    }
+    catch (error) {
+        next(error);
+    }
 
 };
 
 
-module.exports={
-getNotifications,
-createNotification
+
+const createNotification = async (req, res, next) => {
+
+    try {
+
+
+        const notification = await Notification.create(req.body);
+
+
+        res.status(201).json(notification);
+
+
+    }
+    catch (error) {
+        next(error);
+    }
+
+};
+
+
+module.exports = {
+    getNotifications,
+    createNotification
 };

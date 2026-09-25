@@ -1,68 +1,68 @@
-const Booking=require("../models/Booking");
+const Booking = require("../models/Booking");
 
 
-const dashboard=async(req,res,next)=>{
+const dashboard = async (req, res, next) => {
 
-try{
-
-
-const totalBookings=await Booking.countDocuments();
+    try {
 
 
-const revenue=await Booking.aggregate([
-
-{
-$group:{
-_id:null,
-totalRevenue:{
-$sum:"$fare"
-}
-}
-}
-
-]);
+        const totalBookings = await Booking.countDocuments();
 
 
-const status=await Booking.aggregate([
+        const revenue = await Booking.aggregate([
 
-{
-$group:{
-_id:"$status",
-count:{
-$sum:1
-}
-}
-},
+            {
+                $group: {
+                    _id: null,
+                    totalRevenue: {
+                        $sum: "$fare"
+                    }
+                }
+            }
 
-{
-$sort:{
-count:-1
-}
-}
-
-]);
+        ]);
 
 
-res.json({
+        const status = await Booking.aggregate([
 
-totalBookings,
+            {
+                $group: {
+                    _id: "$status",
+                    count: {
+                        $sum: 1
+                    }
+                }
+            },
 
-revenue:
-revenue[0]?.totalRevenue||0,
+            {
+                $sort: {
+                    count: -1
+                }
+            }
 
-status
-
-});
+        ]);
 
 
-}
-catch(error){
-next(error);
-}
+        res.json({
+
+            totalBookings,
+
+            revenue:
+                revenue[0]?.totalRevenue || 0,
+
+            status
+
+        });
+
+
+    }
+    catch (error) {
+        next(error);
+    }
 
 };
 
 
-module.exports={
-dashboard
+module.exports = {
+    dashboard
 };
