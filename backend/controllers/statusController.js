@@ -28,7 +28,7 @@ const updateStatus = async (req, res, next) => {
       await Notification.create({
         userId: user._id,
         trainId: train._id,
-        message: `Train ${train.trainName} status changed to ${train.status}`,
+        message: `Train ${train.trainName} (${train.trainNumber}) status updated to "${train.status}" by Operations Control`,
         type: "Live Status"
       });
     }

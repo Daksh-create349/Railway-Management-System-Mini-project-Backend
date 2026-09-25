@@ -140,7 +140,7 @@ export default function StaffDashboard({ onSimulationTriggered }) {
                     </div>
 
                     <div className="st-quick-actions">
-                      <span className="quick-action-label">Quick Dispatch Actions:</span>
+                      <span className="quick-action-label">Manual Dispatch Controls:</span>
                       <div className="quick-buttons-row">
                         <button
                           className={`btn-pill-sm ${currentStatus === 'On Time' ? 'active-pill' : ''}`}
@@ -150,6 +150,13 @@ export default function StaffDashboard({ onSimulationTriggered }) {
                           On Time
                         </button>
                         <button
+                          className={`btn-pill-sm ${currentStatus === 'Running' ? 'active-pill' : ''}`}
+                          onClick={() => handleUpdateStatus(train._id, 'Running')}
+                          disabled={isUpdating}
+                        >
+                          Running
+                        </button>
+                        <button
                           className={`btn-pill-sm ${currentStatus.includes('15 mins') ? 'active-pill' : ''}`}
                           onClick={() => handleUpdateStatus(train._id, 'Delayed by 15 mins')}
                           disabled={isUpdating}
@@ -157,11 +164,11 @@ export default function StaffDashboard({ onSimulationTriggered }) {
                           +15m Delay
                         </button>
                         <button
-                          className={`btn-pill-sm ${currentStatus.includes('45 mins') ? 'active-pill' : ''}`}
-                          onClick={() => handleUpdateStatus(train._id, 'Delayed by 45 mins')}
+                          className={`btn-pill-sm ${currentStatus.includes('30 mins') ? 'active-pill' : ''}`}
+                          onClick={() => handleUpdateStatus(train._id, 'Delayed by 30 mins')}
                           disabled={isUpdating}
                         >
-                          +45m Delay
+                          +30m Delay
                         </button>
                         <button
                           className={`btn-pill-sm ${currentStatus.includes('Departed') ? 'active-pill' : ''}`}
@@ -178,15 +185,6 @@ export default function StaffDashboard({ onSimulationTriggered }) {
                           Arrived
                         </button>
                       </div>
-
-                      <button
-                        className="btn btn-primary btn-sm btn-block mt-3"
-                        onClick={() => handleSimulate(train._id)}
-                        disabled={isSimulating}
-                      >
-                        <Sparkles size={14} className={isSimulating ? 'spin-icon' : ''} />
-                        <span>{isSimulating ? 'Simulating & Broadcasting...' : 'Randomize Simulation Event'}</span>
-                      </button>
                     </div>
                   </div>
                 );

@@ -92,19 +92,6 @@ export default function Navbar({
 
         {/* Right Controls */}
         <div className="navbar-actions">
-          {/* Quick Simulation Button: Only for Admin & Staff! */}
-          {(role === 'admin' || role === 'staff') && (
-            <button 
-              className="action-btn sim-btn"
-              onClick={onQuickSimulate}
-              disabled={simulating}
-              title="Simulate Real-time Train Movement & Operational Alerts"
-            >
-              <Sparkles size={15} className={simulating ? 'spin-icon' : ''} />
-              <span>{simulating ? 'Simulating...' : 'Simulate Status'}</span>
-            </button>
-          )}
-
           {/* Notifications Bell */}
           <button 
             className="action-btn icon-only-btn" 

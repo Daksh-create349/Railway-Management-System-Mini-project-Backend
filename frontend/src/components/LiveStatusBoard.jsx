@@ -71,9 +71,9 @@ export default function LiveStatusBoard({ onSimulationTriggered }) {
             <span className="live-pulse-dot" />
             <span className="live-label">LIVE TELEMETRY STREAM</span>
           </div>
-          <h2 className="section-title">Train Status Simulation & Operational Center</h2>
+          <h2 className="section-title">Train Fleet Live Status & Dispatch Board</h2>
           <p className="section-subtitle">
-            Simulate real-time track events, station departures, and delay warnings that auto-broadcast to all passenger devices.
+            Real-time track events, station departures, and delay warnings broadcast instantly to all passenger devices.
           </p>
         </div>
 
@@ -96,7 +96,6 @@ export default function LiveStatusBoard({ onSimulationTriggered }) {
       ) : (
         <div className="live-trains-grid">
           {trains.map((train) => {
-            const isSimulating = simulatingId === train._id;
             const statusType = (train.status || 'Running').toLowerCase();
 
             return (
@@ -136,44 +135,76 @@ export default function LiveStatusBoard({ onSimulationTriggered }) {
 
                 {/* Status Controls */}
                 <div className="live-controls-section">
-                  <div className="controls-label">
-                    <Sparkles size={13} /> Automated Event Simulation
+                  <div className="controls-label" style={{ fontWeight: 600, fontSize: '12px', marginBottom: '8px', color: 'var(--text-dim)' }}>
+                    Manual Status Dispatch:
                   </div>
 
-                  <div className="simulation-actions">
+                  <div className="quick-buttons-row" style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '10px' }}>
                     <button
-                      className="btn btn-primary btn-sm btn-simulate"
-                      onClick={() => handleSimulate(train._id)}
-                      disabled={isSimulating}
+                      className={`btn-pill-sm ${train.status === 'On Time' ? 'active-pill' : ''}`}
+                      onClick={() => {
+                        api.updateTrainStatus(train._id, 'On Time').then(() => {
+                          fetchTrains();
+                          if (onSimulationTriggered) onSimulationTriggered();
+                        });
+                      }}
                     >
-                      <Sparkles size={14} className={isSimulating ? 'spin-icon' : ''} />
-                      <span>{isSimulating ? 'Broadcasting...' : 'Simulate Live Status'}</span>
+                      On Time
                     </button>
-                  </div>
-
-                  {/* Manual Quick Override */}
-                  <div className="manual-override-row">
-                    <select
-                      className="status-select-sm"
-                      value={manualStatus[train._id] || ''}
-                      onChange={(e) =>
-                        setManualStatus({ ...manualStatus, [train._id]: e.target.value })
-                      }
-                    >
-                      <option value="">Manual status update...</option>
-                      <option value="On Time">On Time</option>
-                      <option value="Delayed by 15 mins">Delayed by 15 mins</option>
-                      <option value="Delayed by 45 mins">Delayed by 45 mins</option>
-                      <option value="Departed from Origin">Departed from Origin</option>
-                      <option value="Arrived at Destination">Arrived at Destination</option>
-                    </select>
-
                     <button
-                      className="btn btn-outline btn-sm"
-                      disabled={!manualStatus[train._id]}
-                      onClick={() => handleUpdateStatus(train._id)}
+                      className={`btn-pill-sm ${train.status === 'Running' ? 'active-pill' : ''}`}
+                      onClick={() => {
+                        api.updateTrainStatus(train._id, 'Running').then(() => {
+                          fetchTrains();
+                          if (onSimulationTriggered) onSimulationTriggered();
+                        });
+                      }}
                     >
-                      Update
+                      Running
+                    </button>
+                    <button
+                      className={`btn-pill-sm ${train.status?.includes('15 mins') ? 'active-pill' : ''}`}
+                      onClick={() => {
+                        api.updateTrainStatus(train._id, 'Delayed by 15 mins').then(() => {
+                          fetchTrains();
+                          if (onSimulationTriggered) onSimulationTriggered();
+                        });
+                      }}
+                    >
+                      +15m Delay
+                    </button>
+                    <button
+                      className={`btn-pill-sm ${train.status?.includes('30 mins') ? 'active-pill' : ''}`}
+                      onClick={() => {
+                        api.updateTrainStatus(train._id, 'Delayed by 30 mins').then(() => {
+                          fetchTrains();
+                          if (onSimulationTriggered) onSimulationTriggered();
+                        });
+                      }}
+                    >
+                      +30m Delay
+                    </button>
+                    <button
+                      className={`btn-pill-sm ${train.status?.includes('Departed') ? 'active-pill' : ''}`}
+                      onClick={() => {
+                        api.updateTrainStatus(train._id, 'Departed from Station').then(() => {
+                          fetchTrains();
+                          if (onSimulationTriggered) onSimulationTriggered();
+                        });
+                      }}
+                    >
+                      Departed
+                    </button>
+                    <button
+                      className={`btn-pill-sm ${train.status?.includes('Arrived') ? 'active-pill' : ''}`}
+                      onClick={() => {
+                        api.updateTrainStatus(train._id, 'Arrived at Destination').then(() => {
+                          fetchTrains();
+                          if (onSimulationTriggered) onSimulationTriggered();
+                        });
+                      }}
+                    >
+                      Arrived
                     </button>
                   </div>
                 </div>

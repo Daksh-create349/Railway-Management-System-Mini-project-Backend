@@ -21,7 +21,7 @@ export default function NotificationDrawer({ isOpen, onClose, notifications }) {
           {notifications.length === 0 ? (
             <div className="empty-notif">
               <Bell size={32} className="text-muted" />
-              <p>No live alerts received yet. Trigger "Simulate Status" in the top bar to test live broadcasts.</p>
+              <p>No live alerts received yet. Real-time train status updates from Operations Control will appear here.</p>
             </div>
           ) : (
             <div className="notif-list">
