@@ -14,18 +14,22 @@ const createStation = async (req, res, next) => {
 const getStations = async (req, res, next) => {
   try {
     const page = parseInt(req.query.page) || 1;
-    const limit = 5;
+    const limit = parseInt(req.query.limit) || 100;
     const search = req.query.search || "";
 
-    const query = {
-      $or: [
-        { stationName: { $regex: search, $options: "i" } },
-        { stationCode: { $regex: search, $options: "i" } },
-        { city: { $regex: search, $options: "i" } }
-      ]
-    };
+    const query = search
+      ? {
+          $or: [
+            { stationName: { $regex: search, $options: "i" } },
+            { stationCode: { $regex: search, $options: "i" } },
+            { city: { $regex: search, $options: "i" } },
+            { state: { $regex: search, $options: "i" } }
+          ]
+        }
+      : {};
 
     const stations = await Station.find(query)
+      .sort({ _id: -1 })
       .skip((page - 1) * limit)
       .limit(limit);
 

@@ -60,6 +60,8 @@ export const api = {
     return request(`/trains?${query.toString()}`);
   },
   createTrain: (body) => request('/trains', { method: 'POST', body: JSON.stringify(body) }),
+  updateTrain: (id, body) => request(`/trains/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
+  deleteTrain: (id) => request(`/trains/${id}`, { method: 'DELETE' }),
   getSeatAvailability: (id) => request(`/trains/${id}/seats`),
 
   // Stations
@@ -70,6 +72,7 @@ export const api = {
     return request(`/stations?${query.toString()}`);
   },
   createStation: (body) => request('/stations', { method: 'POST', body: JSON.stringify(body) }),
+  deleteStation: (id) => request(`/stations/${id}`, { method: 'DELETE' }),
 
   // Passengers
   getPassengers: (params = {}) => {

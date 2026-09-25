@@ -151,7 +151,7 @@ export default function TrainSearch({ currentUser, onBookingSuccess }) {
               <label><Search size={15} /> Train Name / No.</label>
               <input
                 type="text"
-                placeholder="e.g. Rajdhani"
+                placeholder="e.g. 12952 or Rajdhani"
                 value={searchParams.search}
                 onChange={(e) => setSearchParams({ ...searchParams, search: e.target.value })}
               />

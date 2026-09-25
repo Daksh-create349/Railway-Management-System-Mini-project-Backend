@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MapPin, Plus, Search, Building2, Globe, RefreshCw } from 'lucide-react';
+import { MapPin, Plus, Search, Building2, Globe, RefreshCw, Trash2 } from 'lucide-react';
 import { api } from '../services/api';
 
 export default function StationManager() {
@@ -17,7 +17,7 @@ export default function StationManager() {
   const fetchStations = async () => {
     setLoading(true);
     try {
-      const data = await api.getStations({ search });
+      const data = await api.getStations({ search, limit: 100 });
       setStations(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error('Error fetching stations:', err);
@@ -36,9 +36,21 @@ export default function StationManager() {
       await api.createStation(newStation);
       setModalOpen(false);
       setNewStation({ stationCode: '', stationName: '', city: '', state: '' });
-      fetchStations();
+      await fetchStations();
     } catch (err) {
       alert(err.message || 'Failed to create station');
+    }
+  };
+
+  const handleDeleteStation = async (stationId, name) => {
+    if (!window.confirm(`Are you sure you want to remove station "${name}"?`)) {
+      return;
+    }
+    try {
+      await api.deleteStation(stationId);
+      await fetchStations();
+    } catch (err) {
+      alert(err.message || 'Failed to delete station');
     }
   };
 
@@ -108,9 +120,19 @@ export default function StationManager() {
         <div className="stations-grid">
           {stations.map((st) => (
             <div key={st._id} className="station-card">
-              <div className="station-top">
-                <span className="station-code-badge">{st.stationCode}</span>
-                <span className="station-type-pill">Active Terminal</span>
+              <div className="station-top" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span className="station-code-badge">{st.stationCode}</span>
+                  <span className="station-type-pill">Active Terminal</span>
+                </div>
+                <button
+                  type="button"
+                  title="Remove Station"
+                  onClick={() => handleDeleteStation(st._id, st.stationName)}
+                  style={{ color: '#ef4444', padding: '4px', border: 'none', background: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                >
+                  <Trash2 size={14} />
+                </button>
               </div>
               <h4 className="station-name-text">{st.stationName}</h4>
               <div className="station-location-row">

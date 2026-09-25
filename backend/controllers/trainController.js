@@ -21,15 +21,15 @@ const getTrains = async (req, res, next) => {
     try {
 
         const page = parseInt(req.query.page) || 1;
-        const limit = 5;
+        const limit = parseInt(req.query.limit) || 50;
 
         const query = {};
 
         if (req.query.search) {
-            query.trainName = {
-                $regex: req.query.search,
-                $options: "i"
-            };
+            query.$or = [
+                { trainName: { $regex: req.query.search, $options: "i" } },
+                { trainNumber: { $regex: req.query.search, $options: "i" } }
+            ];
         }
 
         if (req.query.source) {
@@ -49,7 +49,6 @@ const getTrains = async (req, res, next) => {
         const trains = await Train.find(query)
             .skip((page - 1) * limit)
             .limit(limit);
-
 
         res.json(trains);
 

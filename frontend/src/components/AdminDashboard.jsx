@@ -15,7 +15,8 @@ import {
   Clock,
   X,
   Copy,
-  Check
+  Check,
+  Trash2
 } from 'lucide-react';
 import { api } from '../services/api';
 import StatCard from './StatCard';
@@ -30,6 +31,7 @@ export default function AdminDashboard({ onRefreshTrigger }) {
   const [trains, setTrains] = useState([]);
   const [loading, setLoading] = useState(false);
   const [addTrainModal, setAddTrainModal] = useState(false);
+  const [tableTab, setTableTab] = useState('fleet');
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [copiedPnr, setCopiedPnr] = useState(false);
   const [cancelling, setCancelling] = useState(false);
@@ -80,10 +82,24 @@ export default function AdminDashboard({ onRefreshTrigger }) {
         availableSeats: 60,
         status: 'Scheduled'
       });
-      fetchData();
+      setTableTab('fleet');
+      await fetchData();
       if (onRefreshTrigger) onRefreshTrigger();
     } catch (err) {
       alert(err.message || 'Failed to create train');
+    }
+  };
+
+  const handleDeleteTrain = async (trainId, trainName) => {
+    if (!window.confirm(`Are you sure you want to remove train "${trainName}" from active fleet?`)) {
+      return;
+    }
+    try {
+      await api.deleteTrain(trainId);
+      await fetchData();
+      if (onRefreshTrigger) onRefreshTrigger();
+    } catch (err) {
+      alert(err.message || 'Failed to delete train');
     }
   };
 
@@ -270,90 +286,179 @@ export default function AdminDashboard({ onRefreshTrigger }) {
         </div>
       </div>
 
-      {/* Recent Bookings Table (Exact Preclinic Table Style) */}
+      {/* Dynamic Data Table: Toggle between Active Fleet & Reservations */}
       <div className="table-card">
-        <div className="card-header-between">
-          <div>
-            <h3 className="card-title">Recent Reservations</h3>
-            <p className="card-subtitle">Real-time journey entries recorded across network</p>
+        <div className="card-header-between" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <button
+              type="button"
+              className={`btn btn-sm ${tableTab === 'fleet' ? 'btn-primary' : 'btn-outline'}`}
+              onClick={() => setTableTab('fleet')}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+            >
+              <Train size={15} />
+              <span>Active Fleet ({trains.length})</span>
+            </button>
+            <button
+              type="button"
+              className={`btn btn-sm ${tableTab === 'reservations' ? 'btn-primary' : 'btn-outline'}`}
+              onClick={() => setTableTab('reservations')}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+            >
+              <Ticket size={15} />
+              <span>Recent Bookings ({bookings.length})</span>
+            </button>
           </div>
-          <span className="table-count-badge">{bookings.length} Records</span>
+          <span className="table-count-badge">
+            {tableTab === 'fleet' ? `${trains.length} Trains Registered` : `${bookings.length} Passenger Records`}
+          </span>
         </div>
 
-        <div className="table-responsive">
-          <table className="preclinic-table">
-            <thead>
-              <tr>
-                <th>Passenger / PNR</th>
-                <th>Journey Date</th>
-                <th>Route</th>
-                <th>Seat</th>
-                <th>Status</th>
-                <th>Fare</th>
-                <th className="text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {bookings.length === 0 ? (
+        {tableTab === 'fleet' ? (
+          <div className="table-responsive">
+            <table className="preclinic-table">
+              <thead>
                 <tr>
-                  <td colSpan="7" className="text-center py-6 text-muted">
-                    No reservations logged yet. Create a booking to populate telemetry.
-                  </td>
+                  <th>Train Identity & Number</th>
+                  <th>Operational Route</th>
+                  <th>Total Capacity</th>
+                  <th>Available Quota</th>
+                  <th>Operational Status</th>
+                  <th className="text-right">Fleet Actions</th>
                 </tr>
-              ) : (
-                bookings.map((b) => (
-                  <tr key={b._id}>
-                    <td>
-                      <div className="table-user-cell">
-                        <div className="table-user-avatar">
-                          {b.pnr ? b.pnr.slice(-2) : 'TK'}
-                        </div>
-                        <div>
-                          <strong className="user-primary-name">{b.pnr}</strong>
-                          <span className="user-sub-info">Standard Booking</span>
-                        </div>
-                      </div>
-                    </td>
-                    <td>
-                      <div className="table-date-cell">
-                        <span>{new Date(b.journeyDate || b.createdAt).toLocaleDateString()}</span>
-                        <span className="date-time-sub">
-                          <Clock size={11} /> {new Date(b.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </span>
-                      </div>
-                    </td>
-                    <td>
-                      <span className="route-cell-tag">
-                        {b.source || 'NDLS'} ➜ {b.destination || 'BCT'}
-                      </span>
-                    </td>
-                    <td>
-                      <span className="seat-cell-badge">{b.seatNumber || 'S1-12'}</span>
-                    </td>
-                    <td>
-                      <span className={`status-pill status-${(b.status || 'Confirmed').toLowerCase()}`}>
-                        <span className="status-dot" />
-                        {b.status || 'Confirmed'}
-                      </span>
-                    </td>
-                    <td>
-                      <strong className="fare-cell-text">₹{b.fare || 1500}</strong>
-                    </td>
-                    <td className="text-right">
-                      <button 
-                        className="table-action-icon" 
-                        title="View details & actions"
-                        onClick={() => setSelectedBooking(b)}
-                      >
-                        <MoreVertical size={16} />
-                      </button>
+              </thead>
+              <tbody>
+                {trains.length === 0 ? (
+                  <tr>
+                    <td colSpan="6" className="text-center py-6 text-muted">
+                      No trains registered in fleet. Click "+ Add Fleet Train" to register rolling stock.
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                ) : (
+                  trains.map((t) => (
+                    <tr key={t._id}>
+                      <td>
+                        <div className="table-user-cell">
+                          <div className="table-user-avatar" style={{ background: '#eff6ff', color: '#2563eb' }}>
+                            <Train size={16} />
+                          </div>
+                          <div>
+                            <strong className="user-primary-name">{t.trainName}</strong>
+                            <span className="user-sub-info font-mono font-bold" style={{ color: '#2563eb' }}>#{t.trainNumber}</span>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <span className="route-cell-tag">
+                          {t.source || 'NDLS'} ➜ {t.destination || 'BCT'}
+                        </span>
+                      </td>
+                      <td>
+                        <strong style={{ fontSize: '13px', color: 'var(--text-main)' }}>{t.totalSeats || 60} Seats</strong>
+                      </td>
+                      <td>
+                        <span className="seat-cell-badge" style={{ color: (t.availableSeats ?? t.totalSeats) > 10 ? '#16a34a' : '#ea580c' }}>
+                          {t.availableSeats ?? t.totalSeats} Seats Left
+                        </span>
+                      </td>
+                      <td>
+                        <span className={`status-pill status-${(t.status || 'Running').toLowerCase().replace(/\s+/g, '-')}`}>
+                          <span className="status-dot" />
+                          {t.status || 'Running'}
+                        </span>
+                      </td>
+                      <td className="text-right">
+                        <button
+                          className="table-action-icon"
+                          title="Remove Train from Fleet"
+                          onClick={() => handleDeleteTrain(t._id, t.trainName)}
+                          style={{ color: '#ef4444' }}
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="table-responsive">
+            <table className="preclinic-table">
+              <thead>
+                <tr>
+                  <th>Passenger / PNR</th>
+                  <th>Journey Date</th>
+                  <th>Route</th>
+                  <th>Seat</th>
+                  <th>Status</th>
+                  <th>Fare</th>
+                  <th className="text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {bookings.length === 0 ? (
+                  <tr>
+                    <td colSpan="7" className="text-center py-6 text-muted">
+                      No reservations logged yet. Create a booking to populate telemetry.
+                    </td>
+                  </tr>
+                ) : (
+                  bookings.map((b) => (
+                    <tr key={b._id}>
+                      <td>
+                        <div className="table-user-cell">
+                          <div className="table-user-avatar">
+                            {b.pnr ? b.pnr.slice(-2) : 'TK'}
+                          </div>
+                          <div>
+                            <strong className="user-primary-name">{b.pnr}</strong>
+                            <span className="user-sub-info">Standard Booking</span>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <div className="table-date-cell">
+                          <span>{new Date(b.journeyDate || b.createdAt).toLocaleDateString()}</span>
+                          <span className="date-time-sub">
+                            <Clock size={11} /> {new Date(b.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        </div>
+                      </td>
+                      <td>
+                        <span className="route-cell-tag">
+                          {b.source || 'NDLS'} ➜ {b.destination || 'BCT'}
+                        </span>
+                      </td>
+                      <td>
+                        <span className="seat-cell-badge">{b.seatNumber || 'S1-12'}</span>
+                      </td>
+                      <td>
+                        <span className={`status-pill status-${(b.status || 'Confirmed').toLowerCase()}`}>
+                          <span className="status-dot" />
+                          {b.status || 'Confirmed'}
+                        </span>
+                      </td>
+                      <td>
+                        <strong className="fare-cell-text">₹{b.fare || 1500}</strong>
+                      </td>
+                      <td className="text-right">
+                        <button 
+                          className="table-action-icon" 
+                          title="View details & actions"
+                          onClick={() => setSelectedBooking(b)}
+                        >
+                          <MoreVertical size={16} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {/* Add Train Modal */}
